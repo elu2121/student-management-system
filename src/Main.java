@@ -1,5 +1,11 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
+import java.io.FileNotFoundException;
+
+
 
 public class Main {
 
@@ -7,6 +13,9 @@ public class Main {
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
+
+        loadFromFile();
+
 
         while (true) {
             System.out.println("\n--- Student Management System ---");
@@ -26,7 +35,8 @@ public class Main {
                 case 3 -> searchStudent();
                 case 4 -> deleteStudent();
                 case 5 -> {
-                    System.out.println("Goodbye!");
+                     saveToFile();
+                     System.out.println("Goodbye!");
                     return;
                 }
                 default -> System.out.println("Invalid choice!");
@@ -104,4 +114,42 @@ public class Main {
         }
         return null;
     }
+    static void saveToFile() {
+    try (FileWriter writer = new FileWriter("students.txt")) {
+        for (Student s : students) {
+            writer.write(
+                s.getId() + "," +
+                s.getName() + "," +
+                s.getDepartment() + "\n"
+            );
+        }
+    } catch (IOException e) {
+        System.out.println("Error saving data.");
+    }
+}
+static void loadFromFile() {
+    try {
+        File file = new File("students.txt");
+        if (!file.exists()) return;
+
+        Scanner fileScanner = new Scanner(file);
+
+        while (fileScanner.hasNextLine()) {
+            String line = fileScanner.nextLine();
+            String[] parts = line.split(",");
+
+            String id = parts[0];
+            String name = parts[1];
+            String dept = parts[2];
+
+            students.add(new Student(id, name, dept));
+        }
+
+        fileScanner.close();
+    } catch (FileNotFoundException e) {
+        System.out.println("Error loading data.");
+    }
+}
+
+
 }
