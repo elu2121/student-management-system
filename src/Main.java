@@ -18,43 +18,40 @@ public class Main {
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
+            scanner.nextLine(); // clear buffer
 
             switch (choice) {
-                case 1:
-                    addStudent();
-                    break;
-                case 2:
-                    viewStudents();
-                    break;
-                case 3:
-                    searchStudent();
-                    break;
-                case 4:
-                    deleteStudent();
-                    break;
-                case 5:
+                case 1 -> addStudent();
+                case 2 -> viewStudents();
+                case 3 -> searchStudent();
+                case 4 -> deleteStudent();
+                case 5 -> {
                     System.out.println("Goodbye!");
-                    System.exit(0);
-                default:
-                    System.out.println("Invalid choice!");
+                    return;
+                }
+                default -> System.out.println("Invalid choice!");
             }
         }
     }
 
-    // ADD STUDENT
+    // ADD STUDENT (with duplicate check)
     static void addStudent() {
         System.out.print("Enter ID: ");
-        int id = scanner.nextInt();
-        scanner.nextLine(); // clear buffer
+        String id = scanner.nextLine();
 
-        System.out.print("Enter name: ");
+        if (findStudentById(id) != null) {
+            System.out.println("Student with this ID already exists ❌");
+            return;
+        }
+
+        System.out.print("Enter Name: ");
         String name = scanner.nextLine();
 
-        System.out.print("Enter department: ");
-        String department = scanner.nextLine();
+        System.out.print("Enter Department: ");
+        String dept = scanner.nextLine();
 
-        students.add(new Student(id, name, department));
-        System.out.println("Student added successfully!");
+        students.add(new Student(id, name, dept));
+        System.out.println("Student added successfully ✅");
     }
 
     // VIEW STUDENTS
@@ -65,42 +62,46 @@ public class Main {
         }
 
         for (Student s : students) {
-            System.out.println(
-                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
-            );
+            System.out.println(s);
         }
     }
 
     // SEARCH STUDENT
     static void searchStudent() {
         System.out.print("Enter student ID to search: ");
-        int id = scanner.nextInt();
+        String id = scanner.nextLine();
 
-        for (Student s : students) {
-            if (s.getId() == id) {
-                System.out.println(
-                    s.getId() + " | " + s.getName() + " | " + s.getDepartment()
-                );
-                return; // stop when found
-            }
+        Student s = findStudentById(id);
+
+        if (s != null) {
+            System.out.println(s);
+        } else {
+            System.out.println("Student not found ❌");
         }
-
-        System.out.println("Student not found.");
     }
 
-    // DELETE STUDENT (SAFE VERSION)
+    // DELETE STUDENT
     static void deleteStudent() {
         System.out.print("Enter student ID to delete: ");
-        int id = scanner.nextInt();
+        String id = scanner.nextLine();
 
-        for (int i = 0; i < students.size(); i++) {
-            if (students.get(i).getId() == id) {
-                students.remove(i);
-                System.out.println("Student deleted successfully.");
-                return;
+        Student s = findStudentById(id);
+
+        if (s != null) {
+            students.remove(s);
+            System.out.println("Student deleted successfully ✅");
+        } else {
+            System.out.println("Student not found ❌");
+        }
+    }
+
+    // CORE SEARCH LOGIC (used everywhere)
+    static Student findStudentById(String id) {
+        for (Student s : students) {
+            if (s.getId().equals(id)) {
+                return s; // loop stops here
             }
         }
-
-        System.out.println("Student not found.");
+        return null;
     }
 }
