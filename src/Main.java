@@ -10,7 +10,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        loadFromFile(); // 🔥 DAY 6
+        loadFromFile(); // Day 6 + 7
 
         while (true) {
             showMenu();
@@ -22,8 +22,10 @@ public class Main {
                 case 3 -> searchStudent();
                 case 4 -> updateStudent();
                 case 5 -> deleteStudent();
-                case 6 -> {
-                    saveToFile(); // 🔥 DAY 6
+                case 6 -> addGrades();
+                case 7 -> viewReport();
+                case 8 -> {
+                    saveToFile();
                     System.out.println("Goodbye 👋");
                     System.exit(0);
                 }
@@ -40,7 +42,9 @@ public class Main {
         System.out.println("3. Search student");
         System.out.println("4. Update student");
         System.out.println("5. Delete student");
-        System.out.println("6. Exit");
+        System.out.println("6. Add / Update grades");
+        System.out.println("7. View student report");
+        System.out.println("8. Exit");
         System.out.print("Choose an option: ");
     }
 
@@ -100,7 +104,6 @@ public class Main {
         String id = scanner.nextLine();
 
         Student s = findStudentById(id);
-
         if (s == null) {
             System.out.println("Student not found ❌");
             return;
@@ -137,6 +140,44 @@ public class Main {
         System.out.println("Student not found ❌");
     }
 
+    // ADD / UPDATE GRADES (DAY 7)
+    static void addGrades() {
+        System.out.print("Enter student ID: ");
+        String id = scanner.nextLine();
+
+        Student s = findStudentById(id);
+        if (s == null) {
+            System.out.println("Student not found ❌");
+            return;
+        }
+
+        System.out.print("Programming grade: ");
+        int p = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Database grade: ");
+        int d = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Networks grade: ");
+        int n = Integer.parseInt(scanner.nextLine());
+
+        s.setGrades(p, d, n);
+        System.out.println("Grades updated successfully ✅");
+    }
+
+    // VIEW REPORT (DAY 7)
+    static void viewReport() {
+        System.out.print("Enter student ID: ");
+        String id = scanner.nextLine();
+
+        Student s = findStudentById(id);
+        if (s == null) {
+            System.out.println("Student not found ❌");
+            return;
+        }
+
+        System.out.println(s.gradeReport());
+    }
+
     // HELPER
     static Student findStudentById(String id) {
         for (Student s : students) {
@@ -147,15 +188,11 @@ public class Main {
         return null;
     }
 
-    // 🔥 DAY 6: SAVE TO FILE
+    // SAVE TO FILE (UPDATED FOR DAY 7)
     static void saveToFile() {
         try (FileWriter writer = new FileWriter(FILE_NAME)) {
             for (Student s : students) {
-                writer.write(
-                    s.getId() + "," +
-                    s.getName() + "," +
-                    s.getDepartment() + "\n"
-                );
+                writer.write(s.toFileString() + "\n");
             }
             System.out.println("Students saved to file 💾");
         } catch (IOException e) {
@@ -163,7 +200,7 @@ public class Main {
         }
     }
 
-    // 🔥 DAY 6: LOAD FROM FILE
+    // LOAD FROM FILE (UPDATED FOR DAY 7)
     static void loadFromFile() {
         File file = new File(FILE_NAME);
         if (!file.exists()) return;
@@ -171,8 +208,7 @@ public class Main {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] data = line.split(",");
-                students.add(new Student(data[0], data[1], data[2]));
+                students.add(Student.fromFileString(line));
             }
             System.out.println("Students loaded from file 📂");
         } catch (IOException e) {
