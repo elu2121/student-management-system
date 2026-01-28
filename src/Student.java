@@ -22,10 +22,11 @@ public class Student {
         return department;
     }
 
-    @Override
-    public String toString() {
-        return "ID: " + id +
-               " | Name: " + name +
-               " | Department: " + department;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }

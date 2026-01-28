@@ -1,50 +1,50 @@
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.File;
-import java.io.FileNotFoundException;
-
-
+import java.io.*;
 
 public class Main {
 
     static ArrayList<Student> students = new ArrayList<>();
     static Scanner scanner = new Scanner(System.in);
+    static final String FILE_NAME = "students.txt";
 
     public static void main(String[] args) {
 
-        loadFromFile();
-
+        loadFromFile(); // 🔥 DAY 6
 
         while (true) {
-            System.out.println("\n--- Student Management System ---");
-            System.out.println("1. Add Student");
-            System.out.println("2. View Students");
-            System.out.println("3. Search Student");
-            System.out.println("4. Delete Student");
-            System.out.println("5. Exit");
-            System.out.print("Choose an option: ");
-
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // clear buffer
+            showMenu();
+            int choice = Integer.parseInt(scanner.nextLine());
 
             switch (choice) {
                 case 1 -> addStudent();
                 case 2 -> viewStudents();
                 case 3 -> searchStudent();
-                case 4 -> deleteStudent();
-                case 5 -> {
-                     saveToFile();
-                     System.out.println("Goodbye!");
-                    return;
+                case 4 -> updateStudent();
+                case 5 -> deleteStudent();
+                case 6 -> {
+                    saveToFile(); // 🔥 DAY 6
+                    System.out.println("Goodbye 👋");
+                    System.exit(0);
                 }
-                default -> System.out.println("Invalid choice!");
+                default -> System.out.println("Invalid choice ❌");
             }
         }
     }
 
-    // ADD STUDENT (with duplicate check)
+    // MENU
+    static void showMenu() {
+        System.out.println("\n--- Student Management System ---");
+        System.out.println("1. Add student");
+        System.out.println("2. View students");
+        System.out.println("3. Search student");
+        System.out.println("4. Update student");
+        System.out.println("5. Delete student");
+        System.out.println("6. Exit");
+        System.out.print("Choose an option: ");
+    }
+
+    // ADD STUDENT
     static void addStudent() {
         System.out.print("Enter ID: ");
         String id = scanner.nextLine();
@@ -54,10 +54,10 @@ public class Main {
             return;
         }
 
-        System.out.print("Enter Name: ");
+        System.out.print("Enter name: ");
         String name = scanner.nextLine();
 
-        System.out.print("Enter Department: ");
+        System.out.print("Enter department: ");
         String dept = scanner.nextLine();
 
         students.add(new Student(id, name, dept));
@@ -72,7 +72,9 @@ public class Main {
         }
 
         for (Student s : students) {
-            System.out.println(s);
+            System.out.println(
+                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
+            );
         }
     }
 
@@ -84,10 +86,39 @@ public class Main {
         Student s = findStudentById(id);
 
         if (s != null) {
-            System.out.println(s);
+            System.out.println(
+                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
+            );
         } else {
             System.out.println("Student not found ❌");
         }
+    }
+
+    // UPDATE STUDENT
+    static void updateStudent() {
+        System.out.print("Enter student ID to update: ");
+        String id = scanner.nextLine();
+
+        Student s = findStudentById(id);
+
+        if (s == null) {
+            System.out.println("Student not found ❌");
+            return;
+        }
+
+        System.out.print("New name (leave empty to keep same): ");
+        String newName = scanner.nextLine();
+        if (!newName.isEmpty()) {
+            s.setName(newName);
+        }
+
+        System.out.print("New department (leave empty to keep same): ");
+        String newDept = scanner.nextLine();
+        if (!newDept.isEmpty()) {
+            s.setDepartment(newDept);
+        }
+
+        System.out.println("Student updated successfully ✅");
     }
 
     // DELETE STUDENT
@@ -95,61 +126,57 @@ public class Main {
         System.out.print("Enter student ID to delete: ");
         String id = scanner.nextLine();
 
-        Student s = findStudentById(id);
-
-        if (s != null) {
-            students.remove(s);
-            System.out.println("Student deleted successfully ✅");
-        } else {
-            System.out.println("Student not found ❌");
+        for (int i = 0; i < students.size(); i++) {
+            if (students.get(i).getId().equals(id)) {
+                students.remove(i);
+                System.out.println("Student deleted successfully ✅");
+                return;
+            }
         }
+
+        System.out.println("Student not found ❌");
     }
 
-    // CORE SEARCH LOGIC (used everywhere)
+    // HELPER
     static Student findStudentById(String id) {
         for (Student s : students) {
             if (s.getId().equals(id)) {
-                return s; // loop stops here
+                return s;
             }
         }
         return null;
     }
+
+    // 🔥 DAY 6: SAVE TO FILE
     static void saveToFile() {
-    try (FileWriter writer = new FileWriter("students.txt")) {
-        for (Student s : students) {
-            writer.write(
-                s.getId() + "," +
-                s.getName() + "," +
-                s.getDepartment() + "\n"
-            );
+        try (FileWriter writer = new FileWriter(FILE_NAME)) {
+            for (Student s : students) {
+                writer.write(
+                    s.getId() + "," +
+                    s.getName() + "," +
+                    s.getDepartment() + "\n"
+                );
+            }
+            System.out.println("Students saved to file 💾");
+        } catch (IOException e) {
+            System.out.println("Error saving file ❌");
         }
-    } catch (IOException e) {
-        System.out.println("Error saving data.");
     }
-}
-static void loadFromFile() {
-    try {
-        File file = new File("students.txt");
+
+    // 🔥 DAY 6: LOAD FROM FILE
+    static void loadFromFile() {
+        File file = new File(FILE_NAME);
         if (!file.exists()) return;
 
-        Scanner fileScanner = new Scanner(file);
-
-        while (fileScanner.hasNextLine()) {
-            String line = fileScanner.nextLine();
-            String[] parts = line.split(",");
-
-            String id = parts[0];
-            String name = parts[1];
-            String dept = parts[2];
-
-            students.add(new Student(id, name, dept));
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                students.add(new Student(data[0], data[1], data[2]));
+            }
+            System.out.println("Students loaded from file 📂");
+        } catch (IOException e) {
+            System.out.println("Error loading file ❌");
         }
-
-        fileScanner.close();
-    } catch (FileNotFoundException e) {
-        System.out.println("Error loading data.");
     }
-}
-
-
 }
