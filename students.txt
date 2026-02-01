@@ -1,2 +1,4 @@
 1,ELU,SE
 2,SERA,SE
+5,duru,se
+4,mahi,cs
