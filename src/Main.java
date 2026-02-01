@@ -15,14 +15,7 @@ public class Main {
 
         while (running) {
             showMenu();
-
-            int choice;
-            try {
-                choice = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a number ❌");
-                continue;
-            }
+            int choice = getMenuChoice();
 
             switch (choice) {
                 case 1 -> addStudent();
@@ -35,9 +28,9 @@ public class Main {
                     System.out.println("Goodbye 👋");
                     running = false;
                 }
-                case 7 -> sortByName();       // DAY 8
-                case 8 -> sortById();         // DAY 8
-                case 9 -> showTotalStudents(); // DAY 8
+                case 7 -> sortByName();
+                case 8 -> sortById();
+                case 9 -> showTotalStudents();
                 default -> System.out.println("Invalid choice ❌");
             }
         }
@@ -52,25 +45,49 @@ public class Main {
         System.out.println("4. Update Student");
         System.out.println("5. Delete Student");
         System.out.println("6. Save & Exit");
-        System.out.println("7. Sort by Name (Day 8)");
-        System.out.println("8. Sort by ID (Day 8)");
-        System.out.println("9. Show Total Students (Day 8)");
-        System.out.print("Choose: ");
+        System.out.println("7. Sort by Name");
+        System.out.println("8. Sort by ID");
+        System.out.println("9. Show Total Students");
+        System.out.print("Choose an option: ");
+    }
+
+    // ================= DAY 10: SAFE INPUT =================
+    private static int getMenuChoice() {
+        while (true) {
+            String input = scanner.nextLine();
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.print("Please enter a valid number ❌: ");
+            }
+        }
+    }
+
+    private static String getNonEmptyInput(String message) {
+        while (true) {
+            System.out.print(message);
+            String input = scanner.nextLine().trim();
+            if (!input.isEmpty()) {
+                return input;
+            }
+            System.out.println("Input cannot be empty ❌");
+        }
     }
 
     // ================= DAY 1 =================
     private static void addStudent() {
-        System.out.print("Enter ID: ");
-        String id = scanner.nextLine();
+        String id = getNonEmptyInput("Enter ID: ");
 
-        System.out.print("Enter Name: ");
-        String name = scanner.nextLine();
+        if (findStudentById(id) != null) {
+            System.out.println("Student with this ID already exists ❌");
+            return;
+        }
 
-        System.out.print("Enter Department: ");
-        String dept = scanner.nextLine();
+        String name = getNonEmptyInput("Enter Name: ");
+        String dept = getNonEmptyInput("Enter Department: ");
 
         students.add(new Student(id, name, dept));
-        System.out.println("Student added ✅");
+        System.out.println("Student added successfully ✅");
     }
 
     // ================= DAY 2 =================
@@ -81,66 +98,85 @@ public class Main {
         }
 
         for (Student s : students) {
-            System.out.println(s);
+            System.out.println(
+                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
+            );
         }
     }
 
     // ================= DAY 3 =================
     private static void searchStudent() {
-        System.out.print("Enter ID to search: ");
-        String id = scanner.nextLine();
+        String id = getNonEmptyInput("Enter ID to search: ");
 
-        for (Student s : students) {
-            if (s.getId().equals(id)) {
-                System.out.println("Found: " + s);
-                return;
-            }
+        Student s = findStudentById(id);
+        if (s != null) {
+            System.out.println(
+                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
+            );
+        } else {
+            System.out.println("Student not found ❌");
         }
-        System.out.println("Student not found ❌");
     }
 
     // ================= DAY 4 =================
     private static void updateStudent() {
-        System.out.print("Enter ID to update: ");
-        String id = scanner.nextLine();
+        String id = getNonEmptyInput("Enter ID to update: ");
 
-        for (Student s : students) {
-            if (s.getId().equals(id)) {
-                System.out.print("New Name: ");
-                s.setName(scanner.nextLine());
-
-                System.out.print("New Department: ");
-                s.setDepartment(scanner.nextLine());
-
-                System.out.println("Student updated ✅");
-                return;
-            }
+        Student s = findStudentById(id);
+        if (s == null) {
+            System.out.println("Student not found ❌");
+            return;
         }
-        System.out.println("Student not found ❌");
+
+        System.out.print("New Name (leave empty to keep same): ");
+        String newName = scanner.nextLine().trim();
+        if (!newName.isEmpty()) {
+            s.setName(newName);
+        }
+
+        System.out.print("New Department (leave empty to keep same): ");
+        String newDept = scanner.nextLine().trim();
+        if (!newDept.isEmpty()) {
+            s.setDepartment(newDept);
+        }
+
+        System.out.println("Student updated successfully ✅");
     }
 
     // ================= DAY 5 =================
     private static void deleteStudent() {
-        System.out.print("Enter ID to delete: ");
-        String id = scanner.nextLine();
+        String id = getNonEmptyInput("Enter ID to delete: ");
 
-        Iterator<Student> it = students.iterator();
-        while (it.hasNext()) {
-            if (it.next().getId().equals(id)) {
-                it.remove();
-                System.out.println("Student deleted ✅");
-                return;
+        Student s = findStudentById(id);
+        if (s != null) {
+            students.remove(s);
+            System.out.println("Student deleted successfully ✅");
+        } else {
+            System.out.println("Student not found ❌");
+        }
+    }
+
+    // ================= HELPER =================
+    private static Student findStudentById(String id) {
+        for (Student s : students) {
+            if (s.getId().equals(id)) {
+                return s;
             }
         }
-        System.out.println("Student not found ❌");
+        return null;
     }
 
     // ================= DAY 6 =================
     private static void saveToFile() {
         try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
             for (Student s : students) {
-                pw.println(s.getId() + "," + s.getName() + "," + s.getDepartment());
+                pw.println(
+                    s.getId() + "," +
+                    s.getName() + "," +
+                    s.getDepartment()
+                );
             }
+            System.out.println("Students saved to file 💾");
         } catch (IOException e) {
             System.out.println("Error saving file ❌");
         }
@@ -158,7 +194,9 @@ public class Main {
                     students.add(new Student(data[0], data[1], data[2]));
                 }
             }
-            System.out.println("Students loaded 📂");
+            if (!students.isEmpty()) {
+                System.out.println("Students loaded from file 📂");
+            }
         } catch (IOException e) {
             System.out.println("Error loading file ❌");
         }
@@ -166,13 +204,17 @@ public class Main {
 
     // ================= DAY 8 =================
     private static void sortByName() {
-        students.sort(Comparator.comparing(Student::getName));
-        System.out.println("Sorted by name ✅");
+        students.sort(Comparator.comparing(
+            Student::getName, String.CASE_INSENSITIVE_ORDER
+        ));
+        System.out.println("Students sorted by name ✅");
     }
 
     private static void sortById() {
-        students.sort(Comparator.comparing(Student::getId));
-        System.out.println("Sorted by ID ✅");
+        students.sort(Comparator.comparing(
+            Student::getId, String.CASE_INSENSITIVE_ORDER
+        ));
+        System.out.println("Students sorted by ID ✅");
     }
 
     private static void showTotalStudents() {
