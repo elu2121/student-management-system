@@ -1,62 +1,76 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
     private static Scanner scanner = new Scanner(System.in);
+    private static StudentManager manager = new StudentManager();
 
     public static void main(String[] args) {
 
-        StudentManager manager = new StudentManager();
-        manager.loadFromFile();
-
-        boolean running = true;
-
-        while (running) {
+        while (true) {
             showMenu();
-            int choice = getMenuChoice();
+            int choice = getChoice();
 
-            switch (choice) {
-                case 1 -> manager.addStudent();
-                case 2 -> manager.viewStudents();
-                case 3 -> manager.searchStudent();
-                case 4 -> manager.updateStudent();
-                case 5 -> manager.deleteStudent();
-                case 6 -> {
-                    manager.saveToFile();
-                    System.out.println("Goodbye 👋");
-                    running = false;
+            try {
+                switch (choice) {
+                    case 1 -> addStudent();
+                    case 2 -> viewStudents();
+                    case 3 -> deleteStudent();
+                    case 4 -> {
+                        manager.saveToFile();
+                        System.out.println("Goodbye 👋");
+                        return;
+                    }
+                    default -> System.out.println("Invalid option ❌");
                 }
-                case 7 -> manager.sortByName();
-                case 8 -> manager.sortById();
-                case 9 -> manager.showTotalStudents();
-                default -> System.out.println("Invalid choice ❌");
+            } catch (Exception e) {
+                System.out.println("⚠ " + e.getMessage());
+                AppLogger.log("ERROR: " + e.getMessage());
             }
         }
     }
 
     private static void showMenu() {
-        System.out.println("\n===== STUDENT MANAGEMENT SYSTEM =====");
+        System.out.println("\n=== STUDENT MANAGEMENT SYSTEM ===");
         System.out.println("1. Add Student");
         System.out.println("2. View Students");
-        System.out.println("3. Search Student");
-        System.out.println("4. Update Student");
-        System.out.println("5. Delete Student");
-        System.out.println("6. Save & Exit");
-        System.out.println("7. Sort by Name");
-        System.out.println("8. Sort by ID");
-        System.out.println("9. Show Total Students");
-        System.out.print("Choose an option: ");
+        System.out.println("3. Delete Student");
+        System.out.println("4. Save & Exit");
+        System.out.print("Choose: ");
     }
 
-    // ---------- DAY 10 SAFE INPUT ----------
-    private static int getMenuChoice() {
-        while (true) {
-            String input = scanner.nextLine();
-            try {
-                return Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.print("Please enter a valid number ❌: ");
-            }
+    private static int getChoice() {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Please enter a number");
         }
+    }
+
+    private static void addStudent() {
+        System.out.print("ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Name: ");
+        String name = scanner.nextLine();
+        System.out.print("Department: ");
+        String dept = scanner.nextLine();
+
+        manager.addStudent(id, name, dept);
+        System.out.println("Student added ✅");
+    }
+
+    private static void viewStudents() {
+        if (manager.getAllStudents().isEmpty()) {
+            System.out.println("No students ❌");
+            return;
+        }
+        manager.getAllStudents().forEach(System.out::println);
+    }
+
+    private static void deleteStudent() {
+        System.out.print("Enter ID to delete: ");
+        String id = scanner.nextLine();
+        manager.deleteStudent(id);
+        System.out.println("Student deleted ✅");
     }
 }
