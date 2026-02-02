@@ -28,7 +28,14 @@ This project is built day by day to practice Java fundamentals, file handling, a
 
 🔢 Show total number of students
 
-🛡 Input validation & stable menu (no infinite loop)
+🛡 Input validation & stable menu (no infinite loop
+- Add, view, search, update, delete students
+- Prevent duplicate student IDs
+- Sort students by name and ID
+- Display total number of students
+- Save student data to file
+- Load student data automatically on startup
+
 
 🛠 Technologies Used
 
