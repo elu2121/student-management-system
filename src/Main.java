@@ -51,12 +51,11 @@ public class Main {
         System.out.print("Choose an option: ");
     }
 
-    // ================= DAY 10: SAFE INPUT =================
+    // ================= SAFE INPUT =================
     private static int getMenuChoice() {
         while (true) {
-            String input = scanner.nextLine();
             try {
-                return Integer.parseInt(input);
+                return Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.print("Please enter a valid number ❌: ");
             }
@@ -67,14 +66,25 @@ public class Main {
         while (true) {
             System.out.print(message);
             String input = scanner.nextLine().trim();
-            if (!input.isEmpty()) {
-                return input;
-            }
+            if (!input.isEmpty()) return input;
             System.out.println("Input cannot be empty ❌");
         }
     }
 
-    // ================= DAY 1 =================
+    private static double getValidGpa() {
+        while (true) {
+            System.out.print("Enter GPA (0.0 - 4.0): ");
+            try {
+                double gpa = Double.parseDouble(scanner.nextLine());
+                if (gpa >= 0.0 && gpa <= 4.0) return gpa;
+                System.out.println("GPA must be between 0.0 and 4.0 ❌");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid GPA ❌");
+            }
+        }
+    }
+
+    // ================= ADD =================
     private static void addStudent() {
         String id = getNonEmptyInput("Enter ID: ");
 
@@ -85,69 +95,67 @@ public class Main {
 
         String name = getNonEmptyInput("Enter Name: ");
         String dept = getNonEmptyInput("Enter Department: ");
+        double gpa = getValidGpa();
 
-        students.add(new Student(id, name, dept));
+        students.add(new Student(id, name, dept, gpa));
         System.out.println("Student added successfully ✅");
     }
 
-    // ================= DAY 2 =================
+    // ================= VIEW =================
     private static void viewStudents() {
         if (students.isEmpty()) {
             System.out.println("No students found ❌");
             return;
         }
-
         for (Student s : students) {
-            System.out.println(
-                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
-            );
+            System.out.println(s);
         }
     }
 
-    // ================= DAY 3 =================
+    // ================= SEARCH =================
     private static void searchStudent() {
         String id = getNonEmptyInput("Enter ID to search: ");
-
         Student s = findStudentById(id);
-        if (s != null) {
-            System.out.println(
-                s.getId() + " | " + s.getName() + " | " + s.getDepartment()
-            );
-        } else {
-            System.out.println("Student not found ❌");
-        }
+
+        if (s != null) System.out.println(s);
+        else System.out.println("Student not found ❌");
     }
 
-    // ================= DAY 4 =================
+    // ================= UPDATE =================
     private static void updateStudent() {
         String id = getNonEmptyInput("Enter ID to update: ");
-
         Student s = findStudentById(id);
+
         if (s == null) {
             System.out.println("Student not found ❌");
             return;
         }
 
         System.out.print("New Name (leave empty to keep same): ");
-        String newName = scanner.nextLine().trim();
-        if (!newName.isEmpty()) {
-            s.setName(newName);
-        }
+        String name = scanner.nextLine().trim();
+        if (!name.isEmpty()) s.setName(name);
 
         System.out.print("New Department (leave empty to keep same): ");
-        String newDept = scanner.nextLine().trim();
-        if (!newDept.isEmpty()) {
-            s.setDepartment(newDept);
+        String dept = scanner.nextLine().trim();
+        if (!dept.isEmpty()) s.setDepartment(dept);
+
+        System.out.print("New GPA (leave empty to keep same): ");
+        String gpaInput = scanner.nextLine().trim();
+        if (!gpaInput.isEmpty()) {
+            try {
+                double gpa = Double.parseDouble(gpaInput);
+                if (gpa >= 0 && gpa <= 4) s.setGpa(gpa);
+            } catch (NumberFormatException ignored) {}
         }
 
         System.out.println("Student updated successfully ✅");
     }
 
-    // ================= DAY 5 =================
+    // ================= DELETE =================
     private static void deleteStudent() {
         String id = getNonEmptyInput("Enter ID to delete: ");
-
         Student s = findStudentById(id);
+
         if (s != null) {
             students.remove(s);
             System.out.println("Student deleted successfully ✅");
@@ -156,24 +164,23 @@ public class Main {
         }
     }
 
-    // ================= HELPER =================
+    // ================= FIND =================
     private static Student findStudentById(String id) {
         for (Student s : students) {
-            if (s.getId().equals(id)) {
-                return s;
-            }
+            if (s.getId().equals(id)) return s;
         }
         return null;
     }
 
-    // ================= DAY 6 =================
+    // ================= FILE SAVE =================
     private static void saveToFile() {
         try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
             for (Student s : students) {
                 pw.println(
                     s.getId() + "," +
                     s.getName() + "," +
-                    s.getDepartment()
+                    s.getDepartment() + "," +
+                    s.getGpa()
                 );
             }
             System.out.println("Students saved to file 💾");
@@ -182,6 +189,7 @@ public class Main {
         }
     }
 
+    // ================= FILE LOAD =================
     private static void loadFromFile() {
         File file = new File(FILE_NAME);
         if (!file.exists()) return;
@@ -189,9 +197,11 @@ public class Main {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] data = line.split(",");
-                if (data.length == 3) {
-                    students.add(new Student(data[0], data[1], data[2]));
+                String[] d = line.split(",");
+                if (d.length == 4) {
+                    students.add(
+                        new Student(d[0], d[1], d[2], Double.parseDouble(d[3]))
+                    );
                 }
             }
             if (!students.isEmpty()) {
@@ -202,7 +212,7 @@ public class Main {
         }
     }
 
-    // ================= DAY 8 =================
+    // ================= SORT & COUNT =================
     private static void sortByName() {
         students.sort(Comparator.comparing(
             Student::getName, String.CASE_INSENSITIVE_ORDER
